@@ -15,35 +15,32 @@ WATSON_NLP_HEADERS = {
 
 def emotion_detector(text_to_analyse):
     """Analiza un texto y devuelve sus emociones y la emoción dominante."""
-    input_json = {
-        "raw_document": {
-            "text": text_to_analyse
-        }
-    }
-
+    input_json = {"raw_document": {"text": text_to_analyse}}
     response = requests.post(
         WATSON_NLP_URL,
         headers=WATSON_NLP_HEADERS,
         json=input_json,
-        timeout=30
+        timeout=30,
     )
-    formatted_response = response.json()
 
+    if response.status_code == 400:
+        return {
+            "anger": None,
+            "disgust": None,
+            "fear": None,
+            "joy": None,
+            "sadness": None,
+            "dominant_emotion": None,
+        }
+
+    formatted_response = response.json()
     emotions = formatted_response["emotionPredictions"][0]["emotion"]
 
-    anger = emotions["anger"]
-    disgust = emotions["disgust"]
-    fear = emotions["fear"]
-    joy = emotions["joy"]
-    sadness = emotions["sadness"]
-
-    dominant_emotion = max(emotions, key=emotions.get)
-
     return {
-        "anger": anger,
-        "disgust": disgust,
-        "fear": fear,
-        "joy": joy,
-        "sadness": sadness,
-        "dominant_emotion": dominant_emotion
+        "anger": emotions["anger"],
+        "disgust": emotions["disgust"],
+        "fear": emotions["fear"],
+        "joy": emotions["joy"],
+        "sadness": emotions["sadness"],
+        "dominant_emotion": max(emotions, key=emotions.get),
     }
